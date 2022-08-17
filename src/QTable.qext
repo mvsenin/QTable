@@ -1,0 +1,15 @@
+{
+	"name": "QTable",
+	"description": "Plain QTable with advanced measures and almost standard filteting behaviour",
+	"icon": "table",
+	"type": "visualization",
+	"version": "1.2.0",
+	"author": "Maxim Senin",
+	"homepage": "",
+	"keywords": "qlik-sense, visualization",
+	"license": "",
+	"repository": "",
+	"dependencies": {
+		"qlik-sense": ">=3.0.x"
+	}
+}

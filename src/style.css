@@ -1,0 +1,101 @@
+.qv-object-QTable div.qv-object-content-container {
+	overflow: auto;
+}
+
+.qv-object-QTable td  {
+	border-top: 1px solid #f2f2f2;
+	border-bottom: 1px solid #f2f2f2;
+	border-right: 1px solid #f2f2f2;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	vertical-align: middle;
+	cursor: default;
+	font-size: small;
+	padding-top: 0.23076923em;
+    padding-bottom: 0.23076923em;
+	padding-right: 0.61538462em;
+	padding-left: 0.30769231em;
+}
+
+.qv-object-QTable th {
+	border-top: 1px solid #f2f2f2;
+	border-bottom: 1px solid #cccccc;
+	border-right: 1px solid #f2f2f2;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	vertical-align: middle;
+	cursor: default;
+	font-size: small;
+	padding-top: 0.38461538em;
+    padding-bottom: 0.38461538em;
+	padding-right: 0.61538462em;
+	padding-left: 0.30769231em;
+}
+
+.qv-object-QTable th:active {
+	color: #ffffff;
+	background-color: #595959;
+	cursor: pointer;
+}
+
+.qv-object-QTable-search {
+	cursor: pointer;
+	width: 0 !important;
+	border-left: 1px solid #ffffff !important;
+	padding-right: 0.30769231em !important;
+	padding-left: 0.30769231em !important;
+}
+
+.qv-object-QTable th:hover:not(:active) {
+	color: #000000;
+	background-color: #f8f8f8;
+	cursor: pointer;
+}
+
+.qv-object-QTable td.numeric {
+	text-align: right;
+}
+
+.qv-object-QTable td.numericTotal {
+	border-top: 1px solid #a6a6a6;
+	border-bottom: 1px solid #a6a6a6;
+	text-align: right;
+	font-weight: bold;
+}
+
+.qv-object-QTable td.otherTotal {
+	border-top: 1px solid #a6a6a6;
+	border-bottom: 1px solid #a6a6a6;
+	text-align: right;
+	font-weight: bold;
+}
+
+.qv-object-QTable td.otherTotalDim {
+	border-top: 1px solid #a6a6a6;
+	border-bottom: 1px solid #a6a6a6;
+	text-align: left;
+	font-weight: bold;
+}
+
+.qv-object-QTable td.otherTotalMea {
+	border-top: 1px solid #a6a6a6;
+	border-bottom: 1px solid #a6a6a6;
+	text-align: right;
+	font-weight: bold;
+}
+
+.qv-object-QTable td.image {
+ 	text-align: center;
+}
+
+.qv-object-QTable td.selected {
+    background-color: #0aaf54 !important;
+    border-bottom: 1px solid #0aaf54 !important;
+    color: #fff !important;
+}
+
+.qv-object-QTable button {
+	width: 100%;
+}
