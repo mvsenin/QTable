@@ -6,12 +6,13 @@
 	border-top: 1px solid #f2f2f2;
 	border-bottom: 1px solid #f2f2f2;
 	border-right: 1px solid #f2f2f2;
-	white-space: nowrap;
+	white-space: normal;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	vertical-align: middle;
 	cursor: default;
-	font-size: small;
+	font-size: 1em;
+    font-weight: 400;
 	padding-top: 0.23076923em;
     padding-bottom: 0.23076923em;
 	padding-right: 0.61538462em;
@@ -22,22 +23,29 @@
 	border-top: 1px solid #f2f2f2;
 	border-bottom: 1px solid #cccccc;
 	border-right: 1px solid #f2f2f2;
-	white-space: nowrap;
+	white-space: normal;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	vertical-align: middle;
 	cursor: default;
-	font-size: small;
+	font-size: 1em;
+    font-weight: 400;
 	padding-top: 0.38461538em;
     padding-bottom: 0.38461538em;
 	padding-right: 0.61538462em;
 	padding-left: 0.30769231em;
+	word-wrap: normal;
+	font-family: "Source Sans Pro", sans-serif;
 }
 
 .qv-object-QTable th:active {
 	color: #ffffff;
 	background-color: #595959;
 	cursor: pointer;
+	word-wrap: normal;
+	font-family: "Source Sans Pro", sans-serif;
+	font-size: 1em;
+    font-weight: 400;
 }
 
 .qv-object-QTable-search {
@@ -52,6 +60,10 @@
 	color: #000000;
 	background-color: #f8f8f8;
 	cursor: pointer;
+	word-wrap: normal;
+	font-family: "Source Sans Pro", sans-serif;
+	font-size: 1em;
+    font-weight: 400;
 }
 
 .qv-object-QTable td.numeric {
@@ -63,6 +75,7 @@
 	border-bottom: 1px solid #a6a6a6;
 	text-align: right;
 	font-weight: bold;
+	font-size: 1em;
 }
 
 .qv-object-QTable td.otherTotal {
@@ -70,6 +83,7 @@
 	border-bottom: 1px solid #a6a6a6;
 	text-align: right;
 	font-weight: bold;
+	font-size: 1em;
 }
 
 .qv-object-QTable td.otherTotalDim {
@@ -77,6 +91,7 @@
 	border-bottom: 1px solid #a6a6a6;
 	text-align: left;
 	font-weight: bold;
+	font-size: 1em;
 }
 
 .qv-object-QTable td.otherTotalMea {
@@ -84,6 +99,8 @@
 	border-bottom: 1px solid #a6a6a6;
 	text-align: right;
 	font-weight: bold;
+	font-size: 1em;
+	white-space: nowrap;
 }
 
 .qv-object-QTable td.image {

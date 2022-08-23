@@ -1,6 +1,12 @@
 /**
  * Global definitions
  */
+
+/*
+ToDo:
+	2022-08-23:
+		Check formatHeader, createTotal, createRows for qFallbackTitle presence in measure info
+*/
 define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $, cssContent, angular, leonardoui ) {
 	'use strict';
 	$( "<style>" ).html( cssContent ).appendTo( "head" );
@@ -45,7 +51,7 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 	 * @param totalTopBottom - not used
 	 * @returns row with totals
 	 */
-	function  createTotal ( rows, dimensionInfo, measureInfo, labelTotal, totalTopBottom ) {
+	function  createTotal(rows, dimensionInfo, measureInfo, labelTotal, totalTopBottom) {
 
 		var html = "";
 		var ImgURL="/extensions/QTable/images/"; 
@@ -60,45 +66,61 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 		else 
 			var tdTotalLabel=labelTotal;
 
+		var i = 0;
 		
-		for(var i = 0;  i < dimensionInfo.length; i++) {
-			if (i == 0)
-				tdTotal=tdTotal+"<td class='otherTotalDim"+"' colspan='2'>" + tdTotalLabel + '</td>';
-			else
-				tdTotal=tdTotal+"<td class='otherTotalDim"+"' colspan='2'>" + '</td>';
-		}
+		// console.log("createTotal STARTED BP 1");
+
+		dimensionInfo.forEach(function(value, col) {
+			if (value.qFallbackTitle != undefined) {
+				// console.log("createTotal dim value: ");
+				// console.log(value);
+				if (i == 0)
+					tdTotal=tdTotal+"<td class='otherTotalDim"+"' colspan='2'>" + tdTotalLabel + '</td>';
+				else
+					tdTotal=tdTotal+"<td class='otherTotalDim"+"' colspan='2'>" + '</td>';
+				i++;
+			}
+		});
 
 		var hasTotal=false;
 
-		for(var i = 0; i < measureInfo.length; i++){
-			tdTotal += "<td class='";
-			if ( !isNaN(measureInfo[i].qMax) ) {
-				tdTotal += "numericTotal ";
-			} else {
-				tdTotal += "otherTotalMea ";
-			}
-			if(measureInfo[i].totalMeasure===undefined){
-				tdTotal += "'> </td>";
-			} else {
-			  if(measureInfo[i].totalMeasure !== "")
-				hasTotal=true;
-			  if(~measureInfo[i].totalMeasure.toLowerCase().indexOf('<img>')){
-				tdTotal += "image'"+'> <img src="'+ ImgURL + measureInfo[i].totalMeasure.slice(5, measureInfo[i].totalMeasure.length) + '" height=' + '15' + '></td>';
-			  }
-			  else if(~measureInfo[i].totalMeasure.toLowerCase().indexOf('<url>')){
-				var urlmark = measureInfo[i].totalMeasure.toLowerCase().indexOf('<url>');
-				tdTotal += "'"+'> <a href="' + measureInfo[i].totalMeasure.slice(urlmark+5, measureInfo[i].totalMeasure.length) + '" target="_blank">' + measureInfo[i].totalMeasure.slice(0,urlmark) + '</a></td>';
-			  }
-			  else if(~measureInfo[i].totalMeasure.toLowerCase().indexOf('<app>')){
-				var urlmark = measureInfo[i].totalMeasure.toLowerCase().indexOf('<app>');
-				tdTotal += "'"+'> <a href="' + AppBaseURL + measureInfo[i].totalMeasure.slice(urlmark+5, measureInfo[i].totalMeasure.length) + '" target="_blank">' + measureInfo[i].totalMeasure.slice(0,urlmark) + '</a></td>';
-			  }
-			  else {
-				tdTotal += "'>" + measureInfo[i].totalMeasure + '</td>';
-			  }
+		// console.log("createTotal STARTED BP 2");
+
+		for(var i = 0; i < measureInfo.length; i++) {
+			if (measureInfo[i].qFallbackTitle != undefined) {
+				// console.log(measureInfo[i]);
+				tdTotal += "<td class='";
+
+				if ( !isNaN(measureInfo[i].qMax) ) {
+					tdTotal += "numericTotal ";
+				} else {
+					tdTotal += "otherTotalMea ";
+				}
+
+				if(measureInfo[i].totalMeasure===undefined) {
+					tdTotal += "'> </td>";
+				} else {
+					if(measureInfo[i].totalMeasure !== "")
+						hasTotal=true;
+					if(~measureInfo[i].totalMeasure.toLowerCase().indexOf('<img>')) {
+						tdTotal += "image'"+'> <img src="'+ ImgURL + measureInfo[i].totalMeasure.slice(5, measureInfo[i].totalMeasure.length) + '" height=' + '15' + '></td>';
+					} else if(~measureInfo[i].totalMeasure.toLowerCase().indexOf('<url>')) {
+						var urlmark = measureInfo[i].totalMeasure.toLowerCase().indexOf('<url>');
+						tdTotal += "'"+'> <a href="' + measureInfo[i].totalMeasure.slice(urlmark+5, measureInfo[i].totalMeasure.length) + '" target="_blank">' + measureInfo[i].totalMeasure.slice(0,urlmark) + '</a></td>';
+					} else if(~measureInfo[i].totalMeasure.toLowerCase().indexOf('<app>')) {
+						var urlmark = measureInfo[i].totalMeasure.toLowerCase().indexOf('<app>');
+						tdTotal += "'"+'> <a href="' + AppBaseURL + measureInfo[i].totalMeasure.slice(urlmark+5, measureInfo[i].totalMeasure.length) + '" target="_blank">' + measureInfo[i].totalMeasure.slice(0,urlmark) + '</a></td>';
+					} else {
+						tdTotal += "'>" + measureInfo[i].totalMeasure + '</td>';
+					}
+				}
 			}
 		}
+
+		// console.log("createTotal STARTED BP 3");
+		// console.log("hasTotal: ", hasTotal);
 		tdTotal += "</tr>";
+		// console.log("tdTotal: ", tdTotal);
 		if(hasTotal)
 			return tdTotal;
 		else
@@ -115,25 +137,43 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 	 * @returns row with data
 	 */
 	function createRows ( rows, dimensionInfo, measureInfo, labelTotal, totalTopBottom ) {;
-		var ImgURL="/extensions/QTable/images/"; 
+		var ImgURL = "/extensions/QTable/images/"; 
 
 		var AppBaseURL = getAppBaseURL();
 
-		var htmlRows="";
+		var htmlRows = "";
 
-		rows.forEach( function ( row ) {
+		var noOfDims = 0;
+		var dimCols = [];
+
+		// console.log ("dimensionInfo.length");
+		// console.log (dimensionInfo.length);
+
+		// Get number of shown dimensions
+		dimensionInfo.forEach(function(value, col) {
+			if (value.qFallbackTitle != undefined) {
+				noOfDims++;
+				dimCols.push(col);
+			}
+		});
+		
+		rows.forEach(function(row) {
 			htmlRows+="<tr>";
-			row.forEach( function ( cell, key ) {
+			// console.log ("row");
+			// console.log (row);
+			row.forEach(function(cell, key) {
 				if ( cell.qIsOtherCell ) {
 					cell.qText = dimensionInfo[key].othersLabel;
 				}
-			//	console.log (cell);
-			//	console.log (key);
-			//  console.log (dimensionInfo[key]);
-				
-				
+				// console.log ("cell");
+				// console.log (cell);
+				// console.log ("key");
+				// console.log (key);
+				// console.log ("dimensionInfo[key]");
+				// console.log (dimensionInfo[key]);
+
 				//measure columns
-				htmlRows += "<td ";
+				htmlRows += "<td key = '" + key + "' ";
 				//add style defined for a dimension or a measure
 				if (cell.qAttrExps) {
 					if (cell.qAttrExps.qValues[0].qText) {
@@ -159,9 +199,9 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 						var urlmark = cell.qText.toLowerCase().indexOf('<app>');
 						htmlRows += "'"+'> <a href="' + AppBaseURL + cell.qText.slice(urlmark+5, cell.qText.length) + '" target="_blank">' + cell.qText.slice(0,urlmark) + '</a></td>';
 					} else {
-						if (dimensionInfo[key]) {
+						if (key < noOfDims) { //.qFallbackTitle != undefined
 							htmlRows += "selectable' ";
-							htmlRows += " dim-col = '" + key + "'";
+							htmlRows += " dim-col = '" + dimCols[key] + "'";
 							htmlRows += " dim-index = '" + cell.qElemNumber  + "'";
 							htmlRows += " colspan = '2'";
 						}
@@ -229,7 +269,7 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 	 * @param showSearch - whether to show search button, integer >= 1 stands for "yes", and "no" otherwise
 	 * @returns HTML for table header
 	 */	
-	function formatHeader ( col, value, sortorder, showSearch ) {
+	function formatHeader(col, value, sortorder, showSearch) {
 		// Add HTML for search button, if needed
 		var tdSearch = '';
 		var thStyle = '';
@@ -468,7 +508,7 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 			exportData : true
 		},
 
-		paint: function ( $element, layout ) {
+		paint: function($element, layout) {
 			var html = "<table><thead><tr>",
 				self = this,
 				morebutton = false,
@@ -478,29 +518,39 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 				colcount = hypercube.qDimensionInfo.length + hypercube.qMeasureInfo.length,
 				sortorder = hypercube.qEffectiveInterColumnSortOrder;
 
-			//	console.log(hypercube);
-				
+			// console.log("hypercube: ");
+			// console.log(hypercube);
+			// console.log(hypercube.qDimensionInfo);
+			// console.log(hypercube.qMeasureInfo);
+
 			// Render titles for dimensions
             hypercube.qDimensionInfo.forEach(function(value, col) {
 				if (value.qFallbackTitle != undefined) {
+					// console.log("dim: ", value, col);
+					// console.log("dim value: ");
+					// console.log(value);
                 	html += formatHeader(col, value, sortorder, 2);
 				}
             });
 
 			// Render titles for measures
             hypercube.qMeasureInfo.forEach(function(value, col) {
+				// console.log("mea: ", value, col);
 				if (value.qFallbackTitle != undefined) {
+					// console.log("mea: ", value.qFallbackTitle);
                 	html += formatHeader(col + dimcount, value, sortorder);
 				}
-			} );
+			});
 
 			html += "</tr>";
 
 			// Render data:
 
 			// - calculate totals
+			// console.log("createTotal CALLED");
 			var htmlTotal = createTotal(hypercube.qDataPages[0].qMatrix, hypercube.qDimensionInfo, hypercube.qMeasureInfo, layout.labelTotal, layout.totalTopBottom);
-
+			// console.log("createTotal DONE");
+			
 			//insert Total on the top
 			if (layout.totalTopBottom == "top")
 				html = html + htmlTotal;
@@ -511,7 +561,8 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 			var htmlArray = [];
 
 			// push first results on array
-			htmlArray.push(createRows( hypercube.qDataPages[0].qMatrix, hypercube.qDimensionInfo,hypercube.qMeasureInfo,layout.labelTotal,layout.totalTopBottom));
+			htmlArray.push(createRows(hypercube.qDataPages[0].qMatrix, hypercube.qDimensionInfo, hypercube.qMeasureInfo, layout.labelTotal, layout.totalTopBottom));
+			// console.log("createRows DONE");
 
 			//html += createRows( hypercube.qDataPages[0].qMatrix, hypercube.qDimensionInfo,hypercube.qMeasureInfo,layout.labelTotal,layout.totalTopBottom);
 			html += "</tbody></table>";
@@ -521,9 +572,12 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 				morebutton = true;
 			}
 
+			// console.log("HTLM BUILT");
+
 			//create empty table
 			$element.html( html );
-			
+			// console.log("HTML UPDATED");
+
 			//create rows
 			html="";
 			for(var i = 0; i < htmlArray.length; i++)
@@ -553,7 +607,7 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 						}
 
 						//push result from more on array;
-						htmlArray.push(createRows( dataPages[0].qMatrix, hypercube.qDimensionInfo,hypercube.qMeasureInfo,layout.labelTotal,layout.totalTopBottom));
+						htmlArray.push(createRows(dataPages[0].qMatrix, hypercube.qDimensionInfo,hypercube.qMeasureInfo,layout.labelTotal,layout.totalTopBottom));
 						//var html = createRows( dataPages[0].qMatrix, hypercube.qDimensionInfo,hypercube.qMeasureInfo,layout.labelTotal,layout.totalTopBottom);
 
 						// create new html
@@ -581,7 +635,11 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 					
 					// Get the dimension value index
 					var dimInd = parseInt(this.getAttribute("dim-index"));
-		
+
+					// console.log("selection: ");
+					// console.log(dimCol);
+					// console.log(dimInd);
+
 					// Call selectValues with these values
 					if(layout.selectionMode === "CONFIRM") {
 						self.selectValues(dimCol, [dimInd], true);
@@ -613,6 +671,8 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 				}
 				*/
 			});
+			
+			// console.log("FINAL !!!");
 
 			return qlik.Promise.resolve();
 		}
