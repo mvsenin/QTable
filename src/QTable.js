@@ -107,6 +107,10 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 					} else if(~measureInfo[i].totalMeasure.toLowerCase().indexOf('<url>')) {
 						var urlmark = measureInfo[i].totalMeasure.toLowerCase().indexOf('<url>');
 						tdTotal += "'"+'> <a href="' + measureInfo[i].totalMeasure.slice(urlmark+5, measureInfo[i].totalMeasure.length) + '" target="_blank">' + measureInfo[i].totalMeasure.slice(0,urlmark) + '</a></td>';
+					} else if(~measureInfo[i].totalMeasure.toLowerCase().indexOf('<urlcss>')) {
+						var urlmark = measureInfo[i].totalMeasure.toLowerCase().indexOf('<urlcss>');
+						var urlmarkend = measureInfo[i].totalMeasure.toLowerCase().indexOf('>');
+						tdTotal += "'"+'> <a href="' + measureInfo[i].totalMeasure.slice(urlmark+8, measureInfo[i].totalMeasure.length) + '" target="_blank">' + measureInfo[i].totalMeasure.slice(0,urlmark) + '</a></td>';
 					} else if(~measureInfo[i].totalMeasure.toLowerCase().indexOf('<app>')) {
 						var urlmark = measureInfo[i].totalMeasure.toLowerCase().indexOf('<app>');
 						tdTotal += "'"+'> <a href="' + AppBaseURL + measureInfo[i].totalMeasure.slice(urlmark+5, measureInfo[i].totalMeasure.length) + '" target="_blank">' + measureInfo[i].totalMeasure.slice(0,urlmark) + '</a></td>';
@@ -183,7 +187,7 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 
 				htmlRows += " class = '";
 
-				if ( !isNaN(cell.qNum) || (~cell.qText.toLowerCase().indexOf('<url>')) ) {
+				if ( !isNaN(cell.qNum) || (~cell.qText.toLowerCase().indexOf('<url>')) || (~cell.qText.toLowerCase().indexOf('<urlcss')) ) {
 					htmlRows += "numeric ";
 				}
 
@@ -195,7 +199,19 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 					} else if(~cell.qText.toLowerCase().indexOf('<url>')) {
 						var urlmark = cell.qText.toLowerCase().indexOf('<url>');
 						htmlRows += "'"+'> <a href="' + cell.qText.slice(urlmark+5, cell.qText.length) + '" target="_blank">' + cell.qText.slice(0,urlmark) + '</a></td>';
-					} else if(~cell.qText.toLowerCase().indexOf('<app>')) {
+					} else if(~cell.qText.toLowerCase().indexOf('<urlcss')) {
+						var urlmark = cell.qText.toLowerCase().indexOf('<urlcss');
+						var urlmarkend = cell.qText.toLowerCase().indexOf('urlcss/>');
+						var css = cell.qText.slice(urlmark+7, urlmarkend);
+						if (css.length > 0) {
+							css = ' style="' + css + '"';
+						}
+						htmlRows += "'" + '> <a href="' + cell.qText.slice(urlmarkend+8, cell.qText.length)+ '"'
+										+ css
+										+ ' target="_blank">'
+										+ cell.qText.slice(0, urlmark)
+										+ '</a></td>';
+					}else if(~cell.qText.toLowerCase().indexOf('<app>')) {
 						var urlmark = cell.qText.toLowerCase().indexOf('<app>');
 						htmlRows += "'"+'> <a href="' + AppBaseURL + cell.qText.slice(urlmark+5, cell.qText.length) + '" target="_blank">' + cell.qText.slice(0,urlmark) + '</a></td>';
 					} else {
