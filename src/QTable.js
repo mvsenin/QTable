@@ -3,6 +3,10 @@
  */
 
 /*
+	2023-04-25:
+		Added Show Null Value setting to the Options to show/hide null raws
+	2023-04-25:
+		Fixed null dimension issue without qText element in it
 ToDo:
 	2022-08-23:
 		Check formatHeader, createTotal, createRows for qFallbackTitle presence in measure info
@@ -140,7 +144,7 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 	 * @param totalTopBottom - not used
 	 * @returns row with data
 	 */
-	function createRows ( rows, dimensionInfo, measureInfo, labelTotal, totalTopBottom ) {;
+	function createRows ( rows, dimensionInfo, measureInfo, labelTotal, totalTopBottom, tableShowNulls ) {;
 		var ImgURL = "/extensions/QTable/images/"; 
 
 		var AppBaseURL = getAppBaseURL();
@@ -162,70 +166,124 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 		});
 		
 		rows.forEach(function(row) {
-			htmlRows+="<tr>";
 			// console.log ("row");
 			// console.log (row);
-			row.forEach(function(cell, key) {
-				if ( cell.qIsOtherCell ) {
-					cell.qText = dimensionInfo[key].othersLabel;
-				}
-				// console.log ("cell");
-				// console.log (cell);
-				// console.log ("key");
-				// console.log (key);
-				// console.log ("dimensionInfo[key]");
-				// console.log (dimensionInfo[key]);
 
-				//measure columns
-				htmlRows += "<td key = '" + key + "' ";
-				//add style defined for a dimension or a measure
-				if (cell.qAttrExps) {
-					if (cell.qAttrExps.qValues[0].qText) {
-						htmlRows += "style = '" + cell.qAttrExps.qValues[0].qText + "'";
+			// Define whether to show the raw - check nulls and "Show Null Values" setting
+			var rawIsToBeCreated = true;
+
+			// console.log ("show row start");
+			// console.log (rawIsToBeCreated);
+			// console.log (tableShowNulls);
+
+			if (tableShowNulls === "no") {
+				rawIsToBeCreated = false;
+				// console.log ("show row 2");
+				var rawCells = "";
+				row.forEach(function(cell, key) {
+					if (key >= noOfDims) {
+						rawCells = rawCells + "(" + cell.qText + "," + cell.qNum + ") | ";
+						if ((cell.qText !== "-" && cell.qText !== undefined) || !isNaN(cell.qNum)) {
+							rawIsToBeCreated = true;
+						}
 					}
-				};
+				});
+				// console.log ("rawCells");
+				// console.log (rawCells);
+				// console.log (rawIsToBeCreated);
+			}
 
-				htmlRows += " class = '";
+			// console.log ("show row end");
+			// console.log (rawIsToBeCreated);
+			
+			if (rawIsToBeCreated) {
+				htmlRows+="<tr>";
+				row.forEach(function(cell, key) {
+					if ( cell.qIsOtherCell ) {
+						cell.qText = dimensionInfo[key].othersLabel;
+					}
+					// console.log ("cell");
+					// console.log (cell);
+					// console.log ("key");
+					// console.log (key);
+					// console.log ("dimensionInfo[key]");
+					// console.log (dimensionInfo[key]);
 
-				if ( !isNaN(cell.qNum) || (~cell.qText.toLowerCase().indexOf('<url>')) || (~cell.qText.toLowerCase().indexOf('<urlcss')) ) {
-					htmlRows += "numeric ";
-				}
-
-				if (cell.qText === undefined) {
-					htmlRows += "'> </td>";
-				} else  {
-					if(~cell.qText.toLowerCase().indexOf('<img>')) {
-						htmlRows += "image'"+'> <img src="'+ ImgURL + cell.qText.slice(5, cell.qText.length) + '" height=' + '15' + '></td>';
-					} else if(~cell.qText.toLowerCase().indexOf('<url>')) {
-						var urlmark = cell.qText.toLowerCase().indexOf('<url>');
-						htmlRows += "'"+'> <a href="' + cell.qText.slice(urlmark+5, cell.qText.length) + '" target="_blank">' + cell.qText.slice(0,urlmark) + '</a></td>';
-					} else if(~cell.qText.toLowerCase().indexOf('<urlcss')) {
-						var urlmark = cell.qText.toLowerCase().indexOf('<urlcss');
-						var urlmarkend = cell.qText.toLowerCase().indexOf('urlcss/>');
-						var css = cell.qText.slice(urlmark+7, urlmarkend);
-						if (css.length > 0) {
-							css = ' style="' + css + '"';
+					//measure columns
+					htmlRows += "<td key = '" + key + "' ";
+					//add style defined for a dimension or a measure
+					if (cell.qAttrExps) {
+						// console.log("cell text 1:");
+						// console.log(cell.qAttrExps.qValues[0].qText);
+						if (cell.qAttrExps.qValues[0].qText === undefined) {
+							if (!isNaN(cell.qNum)) {
+								cell.qAttrExps.qValues[0].qText = cell.qNum;
+							} else {
+								cell.qAttrExps.qValues[0].qText = '';
+							}
 						}
-						htmlRows += "'" + '> <a href="' + cell.qText.slice(urlmarkend+8, cell.qText.length)+ '"'
-										+ css
-										+ ' target="_blank">'
-										+ cell.qText.slice(0, urlmark)
-										+ '</a></td>';
-					}else if(~cell.qText.toLowerCase().indexOf('<app>')) {
-						var urlmark = cell.qText.toLowerCase().indexOf('<app>');
-						htmlRows += "'"+'> <a href="' + AppBaseURL + cell.qText.slice(urlmark+5, cell.qText.length) + '" target="_blank">' + cell.qText.slice(0,urlmark) + '</a></td>';
-					} else {
-						if (key < noOfDims) { //.qFallbackTitle != undefined
-							htmlRows += "selectable' ";
-							htmlRows += " dim-col = '" + dimCols[key] + "'";
-							htmlRows += " dim-index = '" + cell.qElemNumber  + "'";
-							htmlRows += " colspan = '2'";
+
+						if (cell.qAttrExps.qValues[0].qText !== undefined) {
+							htmlRows += "style = '" + cell.qAttrExps.qValues[0].qText + "'";
+							// console.log("cell text 2:");
+							// console.log(cell.qAttrExps.qValues[0].qText);
 						}
-						htmlRows += "'>" + cell.qText + '</td>';
 					};
-				};
-			} );
-			htmlRows += '</tr>';
+
+					htmlRows += " class = '";
+
+					// console.log("cell.qText 1:");
+					// console.log(cell.qText);
+					if (cell.qText === undefined) {
+						if (!isNaN(cell.qNum)) {
+							cell.qText = cell.qNum;
+						} else {
+							cell.qText = '';
+						}
+					}
+					// console.log("cell.qText 2:");
+					// console.log(cell.qText);
+
+					if ( !isNaN(cell.qNum) || (~cell.qText.toLowerCase().indexOf('<url>')) || (~cell.qText.toLowerCase().indexOf('<urlcss')) ) {
+						htmlRows += "numeric ";
+					}
+
+					if (cell.qText === undefined) {
+						htmlRows += "'> </td>";
+					} else  {
+						if(~cell.qText.toLowerCase().indexOf('<img>')) {
+							htmlRows += "image'"+'> <img src="'+ ImgURL + cell.qText.slice(5, cell.qText.length) + '" height=' + '15' + '></td>';
+						} else if(~cell.qText.toLowerCase().indexOf('<url>')) {
+							var urlmark = cell.qText.toLowerCase().indexOf('<url>');
+							htmlRows += "'"+'> <a href="' + cell.qText.slice(urlmark+5, cell.qText.length) + '" target="_blank">' + cell.qText.slice(0,urlmark) + '</a></td>';
+						} else if(~cell.qText.toLowerCase().indexOf('<urlcss')) {
+							var urlmark = cell.qText.toLowerCase().indexOf('<urlcss');
+							var urlmarkend = cell.qText.toLowerCase().indexOf('urlcss/>');
+							var css = cell.qText.slice(urlmark+7, urlmarkend);
+							if (css.length > 0) {
+								css = ' style="' + css + '"';
+							}
+							htmlRows += "'" + '> <a href="' + cell.qText.slice(urlmarkend+8, cell.qText.length)+ '"'
+											+ css
+											+ ' target="_blank">'
+											+ cell.qText.slice(0, urlmark)
+											+ '</a></td>';
+						}else if(~cell.qText.toLowerCase().indexOf('<app>')) {
+							var urlmark = cell.qText.toLowerCase().indexOf('<app>');
+							htmlRows += "'"+'> <a href="' + AppBaseURL + cell.qText.slice(urlmark+5, cell.qText.length) + '" target="_blank">' + cell.qText.slice(0,urlmark) + '</a></td>';
+						} else {
+							if (key < noOfDims) { //.qFallbackTitle != undefined
+								htmlRows += "selectable' ";
+								htmlRows += " dim-col = '" + dimCols[key] + "'";
+								htmlRows += " dim-index = '" + cell.qElemNumber  + "'";
+								htmlRows += " colspan = '2'";
+							}
+							htmlRows += "'>" + cell.qText + '</td>';
+						};
+					};
+				} );
+				htmlRows += '</tr>';
+			}
 		} );
 		
 		return htmlRows;
@@ -314,10 +372,6 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 	}
 
 	var luiPopover = angular.getService('luiPopover'); // так работает с qvangular!
-	//var $injector = angular.injector(); // так не работает с qvangular!
-	//$injector.invoke(function(serviceA){});
-	//console.log($injector);
-	//console.log($injector.get('luiPopover'));
 	// console.log("luiPopover: ");
 	// console.log(luiPopover);
 
@@ -427,7 +481,22 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 			label: "Yes"
 		}],
 		defaultValue: "no"
-	};	
+	};
+
+	var tableShowNulls = {
+		type: "string",
+		component: "switch",
+		label: "Show Null Values",
+		ref: "tableShowNulls",
+		options: [{
+			value: "no",
+			label: "No"
+		}, {
+			value: "yes",
+			label: "Yes"
+		}],
+		defaultValue: "yes"
+	};
 
 	// Creating collection of the options
 	var options = {
@@ -437,7 +506,8 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 					items: {			
 						labelTotal:labelTotal,
 						totalTopBottom:totalTopBottom,
-						tableSelectonDimensions:tableSelectonDimensions
+						tableSelectonDimensions:tableSelectonDimensions,
+						tableShowNulls:tableShowNulls
 					}
 			
 				}
@@ -534,7 +604,7 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 				colcount = hypercube.qDimensionInfo.length + hypercube.qMeasureInfo.length,
 				sortorder = hypercube.qEffectiveInterColumnSortOrder;
 
-			// console.log("hypercube: ");
+			// console.log("hypercube dims: ");
 			// console.log(hypercube);
 			// console.log(hypercube.qDimensionInfo);
 			// console.log(hypercube.qMeasureInfo);
@@ -577,7 +647,10 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 			var htmlArray = [];
 
 			// push first results on array
-			htmlArray.push(createRows(hypercube.qDataPages[0].qMatrix, hypercube.qDimensionInfo, hypercube.qMeasureInfo, layout.labelTotal, layout.totalTopBottom));
+			// console.log("createRows CALLED");
+			// console.log("hypercube:");
+			// console.log(hypercube.qDataPages[0].qMatrix);
+			htmlArray.push(createRows(hypercube.qDataPages[0].qMatrix, hypercube.qDimensionInfo, hypercube.qMeasureInfo, layout.labelTotal, layout.totalTopBottom, layout.tableShowNulls));
 			// console.log("createRows DONE");
 
 			//html += createRows( hypercube.qDataPages[0].qMatrix, hypercube.qDimensionInfo,hypercube.qMeasureInfo,layout.labelTotal,layout.totalTopBottom);
@@ -623,7 +696,7 @@ define( ["qlik", "jquery", "text!./style.css", "qvangular"], function ( qlik, $,
 						}
 
 						//push result from more on array;
-						htmlArray.push(createRows(dataPages[0].qMatrix, hypercube.qDimensionInfo,hypercube.qMeasureInfo,layout.labelTotal,layout.totalTopBottom));
+						htmlArray.push(createRows(dataPages[0].qMatrix, hypercube.qDimensionInfo, hypercube.qMeasureInfo, layout.labelTotal, layout.totalTopBottom, layout.tableShowNulls));
 						//var html = createRows( dataPages[0].qMatrix, hypercube.qDimensionInfo,hypercube.qMeasureInfo,layout.labelTotal,layout.totalTopBottom);
 
 						// create new html
